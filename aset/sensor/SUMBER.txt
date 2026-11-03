@@ -1,0 +1,7 @@
+MediaPipe Tasks Vision 0.10.14 — Google
+https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/
+Model: hand_landmarker float16 versi 1
+https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
+Lisensi MediaPipe disertakan dalam LICENSE.
+
+Versi perbaikan memakai vision_bundle.mjs, WASM SIMD/tanpa SIMD, dan berkas model lokal melalui HTTPS/localhost. Tidak memerlukan pembungkus base64 atau berkas *-local.js. Jika sumber lokal gagal dimuat, sensor-engine.js menyediakan sumber resmi daring sebagai cadangan.

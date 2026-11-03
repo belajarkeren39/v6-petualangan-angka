@@ -1,0 +1,9 @@
+ASET VISUAL PETUALANGAN ANGKA
+
+Karakter dan latar menggunakan ilustrasi dari paket game sebelumnya.
+Tidak ada generasi atau penyuntingan gambar baru pada versi ini.
+
+Raka: aset/karakter/raka-angka.png
+Robo Arka: aset/karakter/robo-arka-angka.png
+Latar: aset/background/kerajaan-angka.png
+Dekorasi huruf pada halaman telah diganti angka dan tanda operasi.

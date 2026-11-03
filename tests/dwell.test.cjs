@@ -1,0 +1,12 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),path=require('node:path');
+const scope={};vm.createContext(scope);vm.runInContext(fs.readFileSync(path.join(__dirname,'../aset/js/dwell-selector.js'),'utf8')+';this.Selector=CameraDwellSelector;',scope);
+const Selector=scope.Selector;
+test('fresh observations complete the original 360 ms dwell',()=>{const s=new Selector();s.step(0,1000,1000);assert.equal(s.step(0,1200,1200),-1);assert.equal(s.step(0,1400,1400),0);});
+test('cached camera result cannot answer despite many animation frames',()=>{const s=new Selector();s.step(0,1000,1000);s.step(0,1200,1200);for(let now=1200;now<2400;now+=16)assert.equal(s.step(0,1200,now),-1);assert.equal(s.elapsed,0);});
+test('missing hand immediately cancels dwell without grace credit',()=>{const s=new Selector();s.step(0,1000,1000);s.step(0,1200,1200);assert.equal(s.step(-1,1250,1250),-1);assert.equal(s.elapsed,0);assert.equal(s.step(0,1400,1400),-1);});
+test('changing target restarts progress',()=>{const s=new Selector();s.step(0,1000,1000);s.step(0,1200,1200);assert.equal(s.step(1,1400,1400),-1);assert.equal(s.elapsed,0);assert.equal(s.target,1);});
+test('long gaps do not count unseen time',()=>{const s=new Selector();s.step(0,1000,1000);assert.equal(s.step(0,1700,1700),-1);assert.equal(s.elapsed,0);});
+test('reading phase, pause or unavailable sensor resets progress',()=>{const s=new Selector();s.step(0,1000,1000);s.step(0,1200,1200);assert.equal(s.step(0,1300,1300,false),-1);assert.equal(s.elapsed,0);assert.equal(s.step(0,1500,1500),-1);});
+test('stale and out-of-order evidence never fills the bar',()=>{const s=new Selector();s.step(0,1000,1000);assert.equal(s.step(0,1200,1800),-1);s.step(0,2000,2000);assert.equal(s.step(0,1900,2050),-1);assert.equal(s.elapsed,0);});
+test('slow inference still uses capture intervals',()=>{const s=new Selector();s.step(0,1000,1300);assert.equal(s.step(0,1400,1700),0);});
+test('cursor expiry between slow results does not erase fresh capture continuity',()=>{const s=new Selector();s.step(0,1000,1300);s.step(-1,1000,1550);assert.equal(s.step(0,1350,1650),-1);s.step(-1,1350,1900);assert.equal(s.step(0,1700,2000),0);});

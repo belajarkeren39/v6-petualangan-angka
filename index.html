@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Petualangan Angka: Misi Matematika (Kelas 1–6 SD)</title>
+<link rel="stylesheet" href="aset/css/utilities.css?v=angka-pid-1">
+<link rel="stylesheet" href="aset/css/game.css?v=angka-pid-1"><link rel="stylesheet" href="aset/css/anime.css?v=angka-pid-1">
+</head>
+<body>
+
+<button id="fullscreen-restore" hidden type="button">⛶ Kembali ke Layar Penuh</button>
+<div id="arena-container">
+  <div class="world-backdrop" aria-hidden="true"></div><div class="world-sparkles" aria-hidden="true"></div>
+<!-- Video Kamera & Canvas Deteksi Gerak -->
+  <video id="webcam-video" playsinline muted></video>
+  <canvas id="motion-canvas"></canvas>
+
+  <!-- LAYER ANTARMUKA UTAMA -->
+  <div id="ui-layer">
+
+    <!-- ================= 1. LAYAR COVER (RASIO 16:9 PRESISI & TANPA TUMPUK) ================= -->
+    <section id="cover-screen" class="interactive-el w-full h-full grid grid-rows-[auto_1fr_auto] p-2.5 sm:p-4 lg:p-6 gap-2 overflow-hidden">
+      
+      <!-- Dekorasi Latar: Dunia Angka & Peta Petualangan (Non-Interaktif) -->
+      <svg class="pointer-events-none absolute inset-0 w-full h-full z-0" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <path d="M0,900 L0,640 Q200,560 420,640 T860,620 T1300,640 T1600,580 L1600,900 Z" fill="#2A1A7A" opacity="0.55"/>
+        <circle cx="240" cy="120" r="3" fill="#FFF3C4"/><circle cx="520" cy="70" r="2" fill="#FFF3C4"/><circle cx="900" cy="110" r="3" fill="#FFF3C4"/><circle cx="1180" cy="60" r="2" fill="#FFF3C4"/><circle cx="1400" cy="150" r="3" fill="#FFF3C4"/><circle cx="160" cy="400" r="2" fill="#FFF3C4"/><circle cx="1500" cy="420" r="3" fill="#FFF3C4"/><circle cx="700" cy="330" r="2" fill="#FFF3C4"/><circle cx="1050" cy="380" r="2" fill="#FFF3C4"/><circle cx="380" cy="260" r="2" fill="#FFF3C4"/><text class="float-sym " x="90" y="230" font-family="Fredoka,sans-serif" font-weight="700" font-size="170" fill="#FFFFFF" opacity="0.16">1</text><text class="float-sym d2" x="1380" y="250" font-family="Fredoka,sans-serif" font-weight="700" font-size="190" fill="#22D3EE" opacity="0.2">2</text><text class="float-sym d3" x="230" y="560" font-family="Fredoka,sans-serif" font-weight="700" font-size="150" fill="#F472B6" opacity="0.2">3</text><text class="float-sym " x="1330" y="560" font-family="Fredoka,sans-serif" font-weight="700" font-size="170" fill="#FFB300" opacity="0.18">4</text><text class="float-sym d2" x="760" y="210" font-family="Fredoka,sans-serif" font-weight="700" font-size="140" fill="#FFFFFF" opacity="0.12">5</text><text class="float-sym d3" x="620" y="520" font-family="Fredoka,sans-serif" font-weight="700" font-size="150" fill="#FFFFFF" opacity="0.1">6</text><text class="float-sym " x="1100" y="520" font-family="Fredoka,sans-serif" font-weight="700" font-size="160" fill="#FFFFFF" opacity="0.1">7</text>
+        <path d="M60 840 C 300 720, 420 880, 640 790 S 1000 700, 1180 810 S 1450 850, 1560 720" fill="none" stroke="#FFD76A" stroke-width="6" stroke-dasharray="4 16" stroke-linecap="round" opacity="0.55"/>
+        <g opacity="0.8"><circle cx="110" cy="820" r="36" fill="#FFB300" stroke="#FFF3C4" stroke-width="5"/><text x="110" y="826" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="22" fill="#3B1D00">1</text><circle cx="330" cy="785" r="36" fill="#FFB300" stroke="#FFF3C4" stroke-width="5"/><text x="330" y="791" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="22" fill="#3B1D00">2</text><circle cx="560" cy="825" r="36" fill="#FFB300" stroke="#FFF3C4" stroke-width="5"/><text x="560" y="831" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="22" fill="#3B1D00">3</text><circle cx="790" cy="765" r="36" fill="#FFB300" stroke="#FFF3C4" stroke-width="5"/><text x="790" y="771" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="17" fill="#3B1D00">+</text><circle cx="1020" cy="745" r="36" fill="#FFB300" stroke="#FFF3C4" stroke-width="5"/><text x="1020" y="751" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="17" fill="#3B1D00">−</text><circle cx="1260" cy="800" r="36" fill="#FFB300" stroke="#FFF3C4" stroke-width="5"/><text x="1260" y="806" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="17" fill="#3B1D00">×</text><circle cx="1500" cy="740" r="44" fill="#FFB300" stroke="#FFF3C4" stroke-width="5"/><text x="1500" y="746" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="15" fill="#3B1D00">÷</text></g>
+      </svg>
+
+      <!-- BARIS 1: HEADER NAVIGASI ATAS -->
+      <header class="relative z-10 flex items-center justify-between gap-2 border-b border-emerald-400/20 pb-1.5">
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="flex items-center gap-1.5 bg-emerald-950/90 px-2.5 py-1 rounded-full border border-emerald-400/40 shadow truncate">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+            <span class="text-[10px] sm:text-xs font-extrabold tracking-wider text-emerald-200 truncate">MATEMATIKA SD • HITUNG, UKUR & PECAHKAN</span>
+          </div>
+          <span class="hidden xl:inline-flex items-center gap-1 bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[11px] font-extrabold px-2.5 py-1 rounded-full shrink-0">
+            ✦ DUNIA ANGKA
+          </span>
+        </div>
+
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="btn-toggle-audio" class="btn-game bg-emerald-800/90 hover:bg-emerald-700 text-[11px] sm:text-xs px-2.5 py-1 min-h-[34px] sm:min-h-[38px]" aria-label="Pengaturan Suara">
+            <span id="audio-icon">🔊</span> <span id="audio-label">Suara Aktif</span>
+          </button>
+          <button id="btn-fullscreen" class="btn-game bg-slate-800/90 hover:bg-slate-700 text-[11px] sm:text-xs px-2.5 py-1 min-h-[34px] sm:min-h-[38px]" aria-label="Layar Penuh">
+            ⛶ Layar Penuh
+          </button>
+        </div>
+      </header>
+
+      <!-- BARIS 2: PANGGUNG UTAMA (GRID 12 KOLOM PRESISI, TIDAK SALING MENUMPUK) -->
+      <div class="relative z-10 grid grid-cols-12 gap-3 sm:gap-5 items-center my-auto w-full max-w-[1440px] mx-auto min-h-0">
+        
+        <!-- KOLOM KIRI (5 KOLOM): DIORAMA KARAKTER & VISUAL TARGET INTERAKTIF -->
+        <div class="diorama col-span-5 flex flex-col justify-between bg-gradient-to-b from-emerald-950/85 via-emerald-900/60 to-slate-950/90 border-2 border-emerald-400/40 rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 shadow-2xl h-full max-h-[410px] gap-2">
+          
+          <!-- Banner Rantai Makanan Mini di Atas Diorama -->
+          <div class="flex items-center justify-between bg-black/45 px-2.5 py-1 rounded-xl border border-white/10 text-[9px] sm:text-[11px] font-extrabold text-amber-200">
+            <span>🔢 Bilangan</span>
+            <span class="text-emerald-400">➔</span>
+            <span>➕ Hitung</span>
+            <span class="text-emerald-400">➔</span>
+            <span>📐 Bentuk</span>
+            <span class="text-emerald-400">➔</span>
+            <span>🧩 Masalah</span>
+          </div>
+
+          <!-- Panggung 2 Tokoh Utama (Raka & Robo Arka) -->
+          <div class="grid grid-cols-2 gap-2 sm:gap-3 my-auto">
+            <!-- Kartu P1: Raka -->
+            <div class="character-card bg-emerald-950/90 border-2 border-emerald-400 rounded-2xl p-2 flex flex-col items-center text-center shadow-lg">
+              <div class="character-stage">
+                <span class="character-motion raka" data-character="raka"><img class="character-art" src="aset/karakter/raka-angka.png" alt="Raka, penjelajah angka" draggable="false"></span>
+              </div>
+              <span class="mt-1 bg-emerald-500 text-slate-950 font-black text-[9px] sm:text-xs px-2 py-0.5 rounded-full uppercase">
+                P1 • Raka Angka
+              </span>
+              <span class="text-[9px] sm:text-[10px] text-emerald-200/90 mt-0.5 font-semibold">Penjelajah Angka</span>
+            </div>
+
+            <!-- Kartu P2/COM: Robo Arka -->
+            <div class="character-card bg-fuchsia-950/90 border-2 border-pink-400 rounded-2xl p-2 flex flex-col items-center text-center shadow-lg">
+              <div class="character-stage">
+                <span class="character-motion arka" data-character="arka"><img class="character-art" src="aset/karakter/robo-arka-angka.png" alt="Robo Arka, robot pintar angka" draggable="false"></span>
+              </div>
+              <span class="mt-1 bg-pink-400 text-slate-950 font-black text-[9px] sm:text-xs px-2 py-0.5 rounded-full uppercase">
+                P2 / COM • Robo Arka
+              </span>
+              <span class="text-[9px] sm:text-[10px] text-pink-200 mt-0.5 font-semibold">Robot Pintar</span>
+            </div>
+          </div>
+
+          <!-- Simulasi Visual Sensor Telapak Tangan di Bawah Diorama -->
+          <div class="bg-emerald-950/90 border border-emerald-400/40 rounded-xl px-2.5 py-1.5 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-400/20 border border-amber-400 text-sm shrink-0">🖐️</span>
+              <div class="text-left truncate">
+                <div class="text-[10px] sm:text-xs font-extrabold text-amber-300 truncate">Sensor Telapak • Mode PID</div>
+                <div class="text-[9px] sm:text-[10px] text-emerald-200 truncate">Arahkan dan tahan • seperti Penjaga Rimba</div>
+              </div>
+            </div>
+            <span class="bg-emerald-500/20 border border-emerald-400 text-emerald-300 font-black text-[9px] sm:text-[10px] px-2 py-0.5 rounded-lg shrink-0">
+              21 Titik Jari
+            </span>
+          </div>
+        </div>
+
+        <!-- KOLOM KANAN (7 KOLOM): IDENTITAS JUDUL, PANEL KONFIGURASI 4 KOLOM & TOMBOL MULAI -->
+        <div class="mission-panel col-span-7 flex flex-col justify-between space-y-2 sm:space-y-3 text-left min-w-0">
+          
+          <!-- Lencana & Judul Utama -->
+          <div>
+            <div class="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-black text-[9px] sm:text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow">
+              <span>✦ PETUALANGAN DI KERAJAAN ANGKA</span>
+            </div>
+            <h1 class="mt-1 text-2xl sm:text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-300 to-pink-300 drop-shadow leading-none tracking-tight">
+              PETUALANGAN ANGKA
+            </h1>
+            <div class="text-xs sm:text-base lg:text-lg font-extrabold text-emerald-300 tracking-wide mt-0.5">
+              JELAJAH BILANGAN, BENTUK & UKURAN
+            </div>
+            <p class="mt-1 text-[11px] sm:text-xs lg:text-sm text-emerald-100/95 leading-snug max-w-2xl">
+              Baca soalnya, lalu <strong>arahkan telapak ke jawaban dan tahan sampai bar penuh</strong>, seperti Penjaga Rimba. Mode tiga pukulan tetap tersedia pada pengaturan kontrol. Semua kelas memakai <strong>soal mudah</strong>; sentuh dan keyboard juga tersedia.
+            </p>
+          </div>
+
+          <!-- Dek Pengaturan 4 Kolom Lengkap (Mode, Tingkat, Durasi, Aksesibilitas) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-950/80 p-2 sm:p-2.5 rounded-2xl border border-emerald-400/30 shadow-inner">
+            <div class="bg-emerald-950/70 p-1.5 sm:p-2 rounded-xl border border-white/10">
+              <label for="select-mode" class="block text-[9px] sm:text-[10px] font-extrabold text-amber-300 uppercase tracking-wider mb-1">1. Mode Bermain</label>
+              <select id="select-mode" class="w-full bg-slate-900 text-white font-bold text-[11px] sm:text-xs rounded-lg p-1.5 border border-emerald-500/60 focus:outline-none focus:border-amber-400">
+                <option value="solo_com" selected>🏹 Solo vs COM</option>
+                <option value="pvp_duel">⚔️ Duel 2P Serentak</option>
+                <option value="coop_com">🛡️ 2P Kooperatif</option>
+                <option value="tourney_4p">🏆 Lomba 4 Pemain</option>
+              </select>
+            </div>
+
+            <div class="bg-emerald-950/70 p-1.5 sm:p-2 rounded-xl border border-white/10">
+              <label for="select-diff" class="block text-[9px] sm:text-[10px] font-extrabold text-amber-300 uppercase tracking-wider mb-1">2. Kelas • Mudah</label>
+              <select id="select-diff" class="w-full bg-slate-900 text-white font-bold text-[11px] sm:text-xs rounded-lg p-1.5 border border-emerald-500/60 focus:outline-none focus:border-amber-400">
+                <option value="K1" selected>Kelas 1 • Bilangan & bentuk</option>
+                <option value="K2">Kelas 2 • Hitung & ukuran</option>
+                <option value="K3">Kelas 3 • Kali, bagi & pecahan</option>
+                <option value="K4">Kelas 4 • Pecahan & bangun datar</option>
+                <option value="K5">Kelas 5 • Desimal, persen & volume</option>
+                <option value="K6">Kelas 6 • Rasio & pemecahan masalah</option>
+              </select>
+            </div>
+
+            <div class="bg-emerald-950/70 p-1.5 sm:p-2 rounded-xl border border-white/10">
+              <label for="select-duration" class="block text-[9px] sm:text-[10px] font-extrabold text-amber-300 uppercase tracking-wider mb-1">3. Durasi Misi</label>
+              <select id="select-duration" class="w-full bg-slate-900 text-white font-bold text-[11px] sm:text-xs rounded-lg p-1.5 border border-emerald-500/60 focus:outline-none focus:border-amber-400">
+                <option value="0">♾️ Tanpa Waktu</option>
+                <option value="600" selected>⏱️ 10 Menit</option>
+                <option value="900">⏱️ 15 Menit</option>
+                <option value="1800">⏱️ 30 Menit</option>
+              </select>
+            </div>
+
+            <div class="bg-emerald-950/70 p-1.5 sm:p-2 rounded-xl border border-white/10">
+              <label for="select-posture" class="block text-[9px] sm:text-[10px] font-extrabold text-amber-300 uppercase tracking-wider mb-1">4. Jangkauan</label>
+              <select id="select-posture" class="w-full bg-slate-900 text-white font-bold text-[11px] sm:text-xs rounded-lg p-1.5 border border-emerald-500/60 focus:outline-none focus:border-amber-400">
+                <option value="seated" selected>🪑 Mode Duduk</option>
+                <option value="standing">🧍 Mode Berdiri</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Baris Aksi Utama (CTA) -->
+          <div class="flex flex-wrap items-center gap-2.5 pt-0.5">
+            <button id="btn-start-main" class="btn-game bg-gradient-to-b from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 text-sm sm:text-base lg:text-lg px-5 sm:px-7 py-2.5 shadow-xl border-amber-200">
+              ▶ MULAI PETUALANGAN SEKARANG
+            </button>
+            <button id="btn-open-guide" class="btn-game bg-emerald-800/90 hover:bg-emerald-700 text-white text-xs sm:text-sm px-3.5 py-2.5">
+              📖 Panduan Bermain
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- BARIS 3: FOOTER INFORMASI PRIVASI & KONTROL ALTERNATIF -->
+      <footer class="relative z-10 flex items-center justify-between gap-2 text-[10px] sm:text-xs text-emerald-200/85 border-t border-emerald-400/20 pt-1.5">
+        <span class="truncate">🔒 <strong>Privasi Aman:</strong> Kamera diproses 100% lokal di perangkat, tidak pernah direkam atau dikirim ke server.</span>
+        <span class="hidden md:inline-block truncate font-bold text-amber-200/90">⌨️ Kontrol Alternatif: Sentuh Layar • Klik Mouse • Keyboard (P1: Q/W/A/S | P2: I/O/K/L)</span>
+      </footer>
+    </section>
+
+    <!-- ================= 2. MODAL KALIBRASI & LATIHAN KONTROL ================= -->
+    
+<section id="calibration-screen" class="interactive-el hidden w-full h-full">
+  <header class="punch-setup">
+    <div class="punch-title"><span id="calib-badge">UJI KAMERA • TAHAN TELAPAK</span><h2 id="calib-title">Uji Gerakan Tangan</h2></div>
+    <div id="camera-status-pill" role="status">Menyiapkan kamera…</div>
+    <div class="camera-settings">
+      <label for="select-control-mode">Kontrol</label><select id="select-control-mode"><option value="dwell" selected>Tahan telapak • seperti Penjaga Rimba</option><option value="strike">3 pukulan • mode lama</option></select>
+      <label for="select-camera">Kamera</label><select id="select-camera"><option value="user">Depan / otomatis</option><option value="environment">Belakang</option></select>
+      <label for="select-sensor-mode">Mode sensor</label><select id="select-sensor-mode"><option value="AUTO">Otomatis</option><option value="CPU">Kompatibel (CPU)</option></select>
+      <button id="btn-mirror-camera" class="btn-game" type="button">Cermin: aktif</button>
+      <button id="btn-retry-cam" class="btn-game" type="button">↻ Muat Ulang Sensor</button>
+      <p id="sensor-live-detail" role="status" aria-live="polite">Menunggu kamera…</p>
+    </div>
+  </header>
+  <div class="punch-practice-area">
+    <aside class="punch-help">
+      <h3 id="practice-help-title">🖐️ Arahkan dan tahan telapak</h3>
+      <p id="calib-desc">Angkat telapak sampai muncul lingkaran bertuliskan TELAPAK. Ayunkan tangan ke kotak uji, tarik keluar, lalu ulangi.</p>
+      <p id="practice-help-note">Tahan telapak sampai bar penuh; sentuh dan keyboard juga tersedia.</p>
+      <strong id="practice-hand-count" role="status">0 tangan terdeteksi</strong>
+      <p>Gambar ada tetapi tangan belum terbaca? Pilih <b>Kompatibel (CPU)</b>, pastikan telapak utuh terlihat dan cukup terang.</p>
+    </aside>
+    <div id="practice-target" class="punch-test-target">
+      <span id="practice-target-label" class="punch-target-label">TAHAN TELAPAK DI SINI</span>
+      <strong id="practice-hit-count">0%</strong>
+      <div class="punch-progress"><div id="practice-progress" style="width:0%"></div></div>
+      <span id="practice-timer-label">Arahkan telapak dan tahan sampai bar penuh.</span>
+    </div>
+  </div>
+  <footer class="punch-setup-actions">
+    <button id="btn-calib-back" class="btn-game" type="button">← Menu</button>
+    <span>Setelah kamera diizinkan, tekan Mulai untuk masuk layar penuh.</span>
+    <button id="btn-skip-practice" class="btn-game" type="button">▶ Mulai Bermain • Layar Penuh</button>
+  </footer>
+</section>
+
+
+    <!-- ================= 3. HUD & ARENA BERMAIN UTAMA (90-100% KAMERA) ================= -->
+    <section id="gameplay-screen" class="hidden w-full h-full flex flex-col justify-between pointer-events-none">
+      
+      <!-- HUD ATAS RINGKAS (Maks 10-12% Tinggi Layar) -->
+      <header class="interactive-el w-full bg-slate-950/85 backdrop-blur-md border-b border-white/20 px-3 py-2 flex items-center justify-between gap-2 z-20" style="min-height: 52px; max-height: 14%;">
+        <!-- Info Kiri: Mode & Pemain 1 -->
+        <div class="flex items-center gap-2 md:gap-3">
+          <div class="flex items-center gap-1.5 bg-emerald-900/90 border border-emerald-400 px-3 py-1 rounded-xl">
+            <span class="hud-character character-motion raka" data-character="raka" aria-hidden="true"><img class="character-art" src="aset/karakter/raka-angka.png" alt=""></span><span class="text-xs md:text-sm font-black text-emerald-300" id="hud-p1-name">P1: Raka</span>
+            <span class="text-sm md:text-base font-black text-amber-300" id="hud-p1-score">0</span>
+          </div>
+          <div id="hud-p1-qcount" class="text-xs font-bold bg-black/60 px-2.5 py-1 rounded-xl text-emerald-100 border border-white/10">
+            Benar: 0 | Soal #1
+          </div>
+        </div>
+
+        <!-- Info Tengah: Timer Durasi Misi & Indikator Sensor -->
+        <div class="flex items-center gap-2 text-center">
+          <div id="hud-session-timer-box" class="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500 text-slate-950 font-black text-xs md:text-sm shadow-lg border-2 border-amber-200">
+            <span>⏱️ WAKTU MISI:</span>
+            <span id="hud-session-timer" class="font-mono text-sm md:text-base">10:00</span>
+          </div>
+          <span id="detector-badge" class="hidden lg:inline-block px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-700 text-white border border-emerald-300">
+            🖐️ Sensor Telapak Tangan Aktif
+          </span>
+          <span id="global-motion-alert" class="hidden px-3 py-1 rounded-full text-xs font-extrabold bg-amber-600 text-white">
+            🖐️ Tunjukkan Telapak Tangan Terbuka ke Kamera
+          </span>
+        </div>
+
+        <!-- Info Kanan: Lawan/COM/P2 & Kontrol Jeda -->
+        <div class="flex items-center gap-2">
+          <div id="hud-p2-box" class="flex items-center gap-1.5 bg-amber-900/90 border border-amber-400 px-3 py-1 rounded-xl">
+            <span class="hud-character character-motion arka" data-character="arka" aria-hidden="true"><img class="character-art" src="aset/karakter/robo-arka-angka.png" alt=""></span><span class="text-xs md:text-sm font-black text-amber-200" id="hud-p2-name">COM: Arka</span>
+            <span class="text-sm md:text-base font-black text-white" id="hud-p2-score">0</span>
+          </div>
+          <button id="btn-finish-game" class="btn-game bg-emerald-700 hover:bg-emerald-600 text-xs md:text-sm px-3 min-h-[38px]" aria-label="Selesaikan Misi">
+            🏁 Selesai
+          </button>
+          <button id="btn-pause-game" class="btn-game bg-slate-800 hover:bg-slate-700 text-xs md:text-sm px-3 min-h-[38px]" aria-label="Jeda Permainan">
+            ⏸ Jeda
+          </button>
+        </div>
+      </header>
+
+      <!-- AREA ARENA TENGAH (80%+ Layar Kamera Bersih) -->
+      <main id="arena-playfield" class="relative flex-1 w-full h-full flex overflow-hidden">
+        <!-- Akan dirender dinamis oleh JS -->
+      </main>
+
+      <!-- BAR BAWAH SANGAT RINGKAS (Petunjuk Kontrol & Postur) -->
+      <footer class="interactive-el w-full bg-slate-950/75 px-3 py-1.5 flex items-center justify-between text-[11px] md:text-xs text-emerald-200 border-t border-white/15 z-20">
+        <span id="footer-control-hint">🖐️ Arahkan telapak ke jawaban dan tahan sampai bar penuh.</span>
+        <div class="flex items-center gap-3">
+          <button id="btn-camera-live" class="btn-game" type="button">📷 Hubungkan Kamera</button><button id="btn-switch-posture-live" class="underline font-bold text-amber-300 hover:text-amber-200 cursor-pointer">
+            🪑 Ubah Mode Duduk/Berdiri
+          </button>
+          <span id="lighting-indicator" class="font-bold text-green-300">🖐️ Menunggu Tangan...</span>
+        </div>
+      </footer>
+    </section>
+
+    <!-- ================= 4. MODAL JEDA ================= -->
+    <section id="pause-modal" class="interactive-el hidden absolute inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-emerald-950 border-4 border-amber-400 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl space-y-4">
+        <h2 class="text-3xl font-bold text-amber-300">⏸ PERMAINAN DIJEDA</h2>
+        <p class="text-sm text-emerald-100">Timer, detektor kamera, dan progres lawan virtual dibekukan sementara.</p>
+        <div class="flex flex-col gap-3 pt-2">
+          <button id="btn-resume-game" class="btn-game bg-emerald-600 hover:bg-emerald-500 text-white text-lg w-full">
+            ▶ Lanjutkan Bermain
+          </button>
+          <button id="btn-end-from-pause" class="btn-game bg-sky-600 hover:bg-sky-500 text-white text-base w-full">
+            🏁 Akhiri Misi &amp; Lihat Pembahasan
+          </button>
+          <button id="btn-restart-session" class="btn-game bg-amber-600 hover:bg-amber-500 text-white text-base w-full">
+            🔄 Ulangi Sesi Ini
+          </button>
+          <button id="btn-quit-to-cover" class="btn-game bg-slate-800 hover:bg-slate-700 text-white text-base w-full">
+            🏠 Kembali ke Layar Utama
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 5. LAYAR HASIL & PEMBAHASAN ================= -->
+    <section id="results-screen" class="interactive-el hidden w-full h-full bg-slate-950/90 backdrop-blur-md p-4 md:p-8 overflow-y-auto z-40">
+      <div class="max-w-5xl mx-auto bg-emerald-950 border-4 border-amber-400 rounded-3xl p-5 md:p-8 shadow-2xl">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-white/20 pb-4">
+          <div>
+            <span id="result-badge" class="bg-amber-400 text-slate-950 font-black text-xs px-3 py-1 rounded-full uppercase">LAPORAN MISI ANGKA</span>
+            <h2 id="result-title" class="text-3xl md:text-4xl font-bold text-amber-300 mt-1">Misi Selesai!</h2>
+            <p id="result-subtitle" class="text-sm md:text-base text-emerald-100">Berikut ringkasan skor dan pembahasan soal matematika.</p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <button id="btn-play-again" class="btn-game bg-amber-500 hover:bg-amber-400 text-slate-950 text-base px-6">
+              🔄 Main Lagi
+            </button>
+            <button id="btn-result-home" class="btn-game bg-slate-800 hover:bg-slate-700 text-white text-base px-5">
+              🏠 Menu Utama
+            </button>
+          </div>
+        </div>
+
+        <!-- Papan Skor Akhir -->
+        <div id="result-scoreboard" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 my-5">
+          <!-- Diisi oleh JS -->
+        </div>
+
+        <!-- Daftar Pembahasan Soal yang Dijawab -->
+        <div class="mt-6">
+          <h3 class="text-xl font-bold text-amber-200 mb-3">📖 Pembahasan Soal &amp; Cara Menghitung:</h3>
+          <div id="result-review-list" class="space-y-3 max-h-64 overflow-y-auto pr-2">
+            <!-- Diisi oleh JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 7. MODAL PANDUAN SINGKAT ================= -->
+    <section id="guide-modal" class="interactive-el hidden absolute inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-emerald-950 border-4 border-emerald-400 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90%] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-white/15 pb-2">
+          <h2 class="text-2xl font-bold text-amber-300">📖 Cara Bermain: Sensor Telapak Tangan</h2>
+          <button id="btn-close-guide" class="btn-game bg-slate-800 text-xs px-3 min-h-[38px]">✖ Tutup</button>
+        </div>
+        <div class="space-y-3 text-sm text-emerald-100 leading-relaxed">
+          <p><strong>1. Sensor Murni Telapak Tangan (🖐️):</strong> Permainan ini menggunakan pelacak 21 titik sendi telapak tangan dan jari. Sensor mencari bentuk tangan. Pastikan kursor TELAPAK mengikuti tangan dengan benar sebelum bermain.</p>
+          <p><strong>2. Pilih Jawaban:</strong> Mode awal PID mengikuti Penjaga Rimba: arahkan telapak ke target dan tahan sekitar 0,36 detik sampai bar penuh. Pada sensor lambat waktu nyata dapat lebih panjang. Mode 3 pukulan dapat dipilih saat latihan; ayunkan ke target, tarik keluar, lalu ulangi tiga kali. Sentuh/klik cukup satu kali. Gunakan Target Uji sebelum bermain.</p>
+          <p><strong>3. Fase Baca Aman (1,2 Detik Awal):</strong> Saat soal baru muncul, waktu berhenti sejenak agar kamu bisa membaca soal dengan tenang. Waktu per soal menyesuaikan kelas (Kelas 1: 30 detik … Kelas 6: 90 detik).</p>
+          <p><strong>6. Semua Kelas: Mudah.</strong> Kelas 1: bilangan dan bentuk; Kelas 2: hitung dan ukuran; Kelas 3: kali, bagi, dan pecahan; Kelas 4: pecahan dan bangun datar; Kelas 5: desimal, persen, dan volume; Kelas 6: rasio dan pemecahan masalah. Ada 30 soal per kelas (180 soal), lengkap dengan pembahasan.</p>
+          <p><strong>7. Telapak tangan tidak terbaca?</strong> Pastikan ruangan cukup terang, jarak tangan ±40–80 cm dari kamera, telapak terbuka menghadap kamera, lalu tekan <em>Muat Ulang Kamera</em>. Target juga bisa diklik/disentuh atau memakai keyboard.</p>
+          <p><strong>4. Mode Aksesibilitas Duduk:</strong> Pilih <em>Mode Duduk</em> agar posisi target jawaban berada di jangkauan telapak tangan saat duduk.</p>
+          <p><strong>5. Mode Duel 2 Pemain Serentak:</strong> Satu kamera dibagi menjadi Area Kiri (Pemain 1) dan Area Kanan (Pemain 2). Masing-masing pemain menggunakan telapak tangannya di sisi layarnya sendiri secara bersamaan!</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script src="aset/js/animasi.js?v=angka-pid-1"></script>
+<script src="aset/js/dwell-selector.js?v=angka-pid-1"></script>
+<script src="aset/js/kontrol-pukul.js?v=angka-pid-1"></script>
+<script src="aset/js/bank-angka.js?v=angka-pid-1"></script>
+<script src="aset/js/sensor-camera.js?v=angka-pid-1"></script>
+<script src="aset/js/game.js?v=angka-pid-1"></script>
+</body>
+</html>

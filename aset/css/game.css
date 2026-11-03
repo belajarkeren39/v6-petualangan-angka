@@ -1,0 +1,172 @@
+
+  :root {
+    --forest-dark: #1A1050;
+    --emerald-leaf: #7658F5;
+    --amber-gold: #FFB300;
+    --sky-cyan: #22D3EE;
+    --coral-red: #F43F5E;
+    --parchment: #FFF8E7;
+  }
+  * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+  body, html {
+    margin: 0; padding: 0; width: 100vw; height: 100dvh; overflow: hidden;
+    background: radial-gradient(circle at center, #1a1050 0%, #060316 100%);
+    font-family: 'Nunito', sans-serif;
+    color: var(--parchment);
+    display: flex; align-items: center; justify-content: center;
+  }
+  h1, h2, h3, .font-title { font-family: 'Fredoka', sans-serif; }
+  
+  /* Arena Kamera & Canvas Terkunci Rasio 16:9 */
+  #arena-container {
+    position: relative;
+    width: min(100vw, calc(100dvh * 16 / 9));
+    height: min(100dvh, calc(100vw * 9 / 16));
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: radial-gradient(circle at 30% 20%, #3b27a3 0%, #1a1050 55%, #0b0626 100%);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 0 2px rgba(176, 160, 255, 0.4);
+    border-radius: clamp(0px, 1vw, 18px);
+  }
+  #webcam-video {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    object-fit: contain; transform: scaleX(-1); z-index: 1;
+    pointer-events: none;
+  }
+  #motion-canvas {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 2; pointer-events: none;
+  }
+  #ui-layer {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 10; display: flex; flex-direction: column; justify-content: space-between;
+    pointer-events: none;
+  }
+  .interactive-el { pointer-events: auto; }
+
+  /* Tombol & Fokus Aksesibilitas */
+  .btn-game {
+    min-height: 40px; padding: 0.45rem 1rem;
+    border-radius: 0.85rem; font-weight: 800; font-family: 'Fredoka', sans-serif;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.15s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+    cursor: pointer; border: 2px solid rgba(255,255,255,0.28);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.45);
+    white-space: nowrap;
+  }
+  .btn-game:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.45); }
+  .btn-game:focus-visible { outline: 3px solid #FFF; outline-offset: 2px; }
+  
+  /* Target Jawaban Mengambang (Floating Bubbles) */
+  .quadrant-card {
+    position: relative;
+    background: rgba(26, 16, 80, 0.86);
+    border: 3px solid rgba(255, 248, 231, 0.55);
+    border-radius: 1.25rem;
+    backdrop-filter: blur(4px);
+    transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+    overflow: hidden;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+  .floating-bubble {
+    position: absolute;
+    top: 0; left: 0;
+    background: radial-gradient(circle at 30% 25%, rgba(139, 92, 246, 0.95), rgba(49, 27, 146, 0.94));
+    border: 3px solid rgba(255, 248, 231, 0.78);
+    border-radius: 2rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5), inset 0 2px 8px rgba(255,255,255,0.25);
+    backdrop-filter: blur(4px);
+    pointer-events: auto;
+    cursor: pointer;
+    will-change: transform;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    overflow: hidden;
+  }
+  .floating-bubble:hover, .floating-bubble:focus-visible,
+  .quadrant-card:hover, .quadrant-card:focus-visible {
+    border-color: var(--amber-gold);
+    outline: none;
+  }
+  .floating-bubble.active-dwell, .quadrant-card.active-dwell {
+    border-color: #00E676;
+    background: radial-gradient(circle at 30% 25%, rgba(22, 163, 74, 0.96), rgba(20, 83, 45, 0.96));
+    box-shadow: 0 0 24px rgba(0, 230, 118, 0.75);
+  }
+  .floating-bubble.global-spike-warn, .quadrant-card.global-spike-warn {
+    border-color: var(--coral-red);
+  }
+
+  /* Safe Face Zone Indicator */
+  .face-safe-zone {
+    border: 2px dashed rgba(255, 248, 231, 0.22);
+    border-radius: 9999px;
+    pointer-events: none;
+  }
+
+  /* Cover Background & Dekorasi Kanopi Hutan */
+  #cover-screen {
+    position: relative;
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(255, 179, 0, 0.22) 0%, transparent 42%),
+      radial-gradient(circle at 85% 78%, rgba(236, 72, 153, 0.26) 0%, transparent 50%),
+      radial-gradient(circle at 70% 15%, rgba(34, 211, 238, 0.16) 0%, transparent 40%),
+      linear-gradient(135deg, rgba(30, 16, 90, 0.96) 0%, rgba(58, 30, 140, 0.92) 50%, rgba(18, 9, 60, 0.97) 100%);
+    background-size: cover;
+    background-position: center;
+  }
+
+  @keyframes floatSlow {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+  }
+  .animate-float-slow {
+    animation: floatSlow 3.8s ease-in-out infinite;
+  }
+  .animate-float-delayed {
+    animation: floatSlow 4.2s ease-in-out 1.2s infinite;
+  }
+
+  .float-sym { animation: floatSlow 5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  .float-sym.d2 { animation-duration: 6.5s; animation-delay: 1s; }
+  .float-sym.d3 { animation-duration: 4.4s; animation-delay: 2s; }
+  .floating-bubble::before {
+    content: ""; position: absolute; top: 6%; left: 8%; width: 38%; height: 22%;
+    border-radius: 50%; background: rgba(255,255,255,0.22); transform: rotate(-18deg); pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* TARGET / DINDING JAWABAN */
+  .floating-bubble{background:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;border-radius:0!important;overflow:visible!important;filter:drop-shadow(0 8px 10px rgba(0,0,0,.55))}
+  .floating-bubble::before{display:none}
+  .shield-bg{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;overflow:visible}
+  .shield-bg .body{fill:#2f3b66;stroke:#FBBF24;stroke-width:4;vector-effect:non-scaling-stroke;transition:fill .12s}
+  .shield-bg .rim{fill:none;stroke:rgba(255,255,255,.35);stroke-width:2;vector-effect:non-scaling-stroke}
+  .shield-bg .crack{fill:none;stroke:#FDE68A;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;opacity:0;vector-effect:non-scaling-stroke;transition:opacity .1s}
+  .floating-bubble:hover .body{stroke:#fff}
+  .floating-bubble[data-dmg="1"] .body{fill:#475569}
+  .floating-bubble[data-dmg="2"] .body{fill:#7c2d12}
+  .floating-bubble[data-dmg="1"] .c1,.floating-bubble[data-dmg="2"] .c1,.floating-bubble[data-dmg="2"] .c2{opacity:1}
+  @keyframes shieldShake{0%{rotate:0deg;scale:1}25%{rotate:-5deg;scale:.93}60%{rotate:4deg;scale:1.04}100%{rotate:0deg;scale:1}}
+  .shield-hit{animation:shieldShake .18s ease-out}
+  .floating-bubble.aiming .body{stroke:#fff}
+  .floating-bubble.locked .body{fill:#14532d;stroke:#4ADE80}
+  .floating-bubble.locked{filter:drop-shadow(0 0 14px rgba(74,222,128,.85))}
+  .floating-bubble.locked [id^="quad-bar"]{background:#4ade80}
+  /* BIDIKAN TRANSPARAN */
+  .reticle .fillc{fill:rgba(15,23,42,.22)}
+  .reticle .ring{fill:none;stroke:#FBBF24;stroke-width:3;vector-effect:non-scaling-stroke}
+  .reticle .ring2{fill:none;stroke:rgba(255,255,255,.6);stroke-width:2;stroke-dasharray:5 7;vector-effect:non-scaling-stroke;transform-origin:50% 50%}
+  .reticle .ticks{fill:none;stroke:#FBBF24;stroke-width:3;stroke-linecap:round;vector-effect:non-scaling-stroke}
+  .reticle-text{text-shadow:0 1px 4px #000,0 0 3px #000}
+  .floating-bubble.aiming .reticle .ring{stroke:#fff}
+  .floating-bubble.locked .reticle .ring,.floating-bubble.locked .reticle .ticks{stroke:#4ADE80}
+  .floating-bubble.locked .reticle .ring2{stroke:#4ADE80;animation:reticleSpin 1.6s linear infinite}
+  .floating-bubble.locked .reticle .fillc{fill:rgba(20,83,45,.3)}
+  @keyframes reticleSpin{to{transform:rotate(360deg)}}
